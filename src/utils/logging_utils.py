@@ -7,6 +7,7 @@ from typing import Optional
 
 
 def setup_logging(
+    level: Optional[int] = None,
     log_level: str = "INFO",
     log_file: Optional[str] = None,
     log_dir: str = "logs",
@@ -15,7 +16,8 @@ def setup_logging(
     Setup logging configuration for the application.
     
     Args:
-        log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        level: Logging level as int (logging.DEBUG, logging.INFO, etc.)
+        log_level: Logging level as string (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_file: Optional log file name
         log_dir: Directory to store log files
         
@@ -28,7 +30,11 @@ def setup_logging(
     
     # Get root logger
     logger = logging.getLogger()
-    logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+    # Use level parameter if provided, otherwise parse log_level string
+    if level is not None:
+        logger.setLevel(level)
+    else:
+        logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
     
     # Remove existing handlers to avoid duplicates
     logger.handlers = []
@@ -41,7 +47,8 @@ def setup_logging(
     
     # Console handler
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+    handler_level = level if level is not None else getattr(logging, log_level.upper(), logging.INFO)
+    console_handler.setLevel(handler_level)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
@@ -53,7 +60,7 @@ def setup_logging(
             maxBytes=10485760,  # 10 MB
             backupCount=5
         )
-        file_handler.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+        file_handler.setLevel(handler_level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
     
